@@ -58,15 +58,6 @@
                     </select>
                 </div>
 
-                <!-- Member -->
-                <div class="mb-3">
-                    <label class="form-label">Member</label>
-                    <select name="member" class="form-control">
-                        <option value="1" {{ $pelanggan->member ? 'selected' : '' }}>Ya</option>
-                        <option value="0" {{ !$pelanggan->member ? 'selected' : '' }}>Tidak</option>
-                    </select>
-                </div>
-
                 <!-- Poin -->
                 <div class="mb-3">
                     <label class="form-label">Poin</label>

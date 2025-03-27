@@ -12,16 +12,18 @@ class Transaksi extends Model
     protected $table = 'transaksi_penjualan';
 
     protected $fillable = [
-        'pelanggan_id', 
-        'user_id', 
-        'total_pembelanjaan', 
-        'diskon_persen', 
-        'diskon_nominal', 
-        'total_setelah_diskon', 
-        'uang_dibayar', 
-        'kembalian', 
+        'user_id',
+        'pelanggan_id',
+        'tipe_pelanggan',
+        'total_pembelanjaan',
+        'diskon_persen',
+        'diskon_nominal',
         'poin_digunakan',
-        'poin_didapat', 
+        'total_setelah_diskon',
+        'ppn',
+        'total_akhir',
+        'uang_dibayar',
+        'kembalian',
     ];
 
     public function pelanggan()
@@ -34,8 +36,10 @@ class Transaksi extends Model
         return $this->belongsTo(User::class, 'user_id'); // Sesuaikan dengan nama kolom di controller
     }
 
-    public function detail()
-    {
-        return $this->hasMany(TransaksiDetail::class, 'id_transaksi'); // Pastikan ini sesuai dengan relasi detail
-    }
+    
+// Di model Transaksi
+public function detail()
+{
+    return $this->hasMany(TransaksiDetail::class);
+}
 }

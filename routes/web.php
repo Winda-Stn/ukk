@@ -77,16 +77,10 @@ Route::middleware(['auth', 'admin_or_kasir'])->group(function () {
         Route::delete('/delete/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
     
     });
-
-   
-
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/export', [LaporanController::class, 'export'])->name('laporan.export');
-    
     Route::get('/laporann', [LaporanStokController::class, 'index'])->name('laporann.index');
     Route::get('/laporann/export', [LaporanStokController::class, 'export'])->name('laporann.export');
-
-
 });
 
 // Middleware Kasir - Hanya Akses Dashboard Kasir & Tambah/Edit Pelanggan

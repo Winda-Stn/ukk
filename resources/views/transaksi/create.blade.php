@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="d-flex">
-        <!-- Sidebar -->
         <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 250px; height: 100vh;">
             <a href="#" class="d-flex align-items-center mb-3 text-white text-decoration-none">
                 <span class="fs-4">rOtan</span>
@@ -34,11 +33,9 @@
                 @csrf
                 
                 <div class="row">
-                    <!-- Kolom KIRI: Product & Keranjang -->
                     <div class="col-md-8 mb-3">
-                        <!-- Card PRODUCT -->
                         <div class="card shadow-sm mb-3">
-                            <div class="card-header bg-primary text-white">
+                            <div class="card-header bg-dark text-white">
                                 <strong>Product</strong>
                             </div>
                             <div class="card-body">
@@ -46,11 +43,11 @@
                                     <label for="pelanggan_id">Tipe Pelanggan</label>
                                     <select name="pelanggan_id" class="form-control" id="pelanggan" onchange="hitungTotal()">
                                         <option value="">Pilih Pelanggan</option>
-                                        @foreach ($pelanggan as $pelanggan)
-                                            <option value="{{ $pelanggan->id }}"
-                                                    data-tipe="{{ $pelanggan->tipe_pelanggan }}"
-                                                    data-membership_points="{{ $pelanggan->membership_points }}">
-                                                {{ $pelanggan->name }} (Tipe: {{ $pelanggan->tipe_pelanggan }})
+                                        @foreach ($pelanggan as $p)
+                                            <option value="{{ $p->id }}"
+                                                    data-tipe="{{ $p->tipe_pelanggan }}"
+                                                    data-membership_points="{{ $p->membership_points }}">
+                                                {{ $p->name }} (Tipe: {{ $p->tipe_pelanggan }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -60,18 +57,17 @@
                                     <div class="d-flex align-items-center">
                                         <label class="me-2">Pilih Produk:</label>
                                         <select id="select-produk" class="form-control me-2">
-                                        <option value="">-- Pilih Item --</option>
-                                        @foreach ($barang as $item)
-                                            <option value="{{ $item->id }}"
-                                                    data-harga1="{{ $item->tipe_1 }}"
-                                                    data-harga2="{{ $item->tipe_2 }}"
-                                                    data-harga3="{{ $item->tipe_3 }}"
-                                                    data-stock="{{ $item->stok }}"
-                                                    data-expired="{{ $item->tanggal_kadaluarsa->format('d-m-Y') }}">
-                                                {{ $item->nama_barang }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                            <option value="">-- Pilih Item --</option>
+                                            @foreach ($barang as $item)
+                                                <option value="{{ $item->id }}"
+                                                        data-harga-jual-1="{{ $item->harga_jual_1 }}"
+                                                        data-harga-jual-2="{{ $item->harga_jual_2 }}"
+                                                        data-harga-jual-3="{{ $item->harga_jual_3 }}"
+                                                        data-stock="{{ $item->stok }}">
+                                                    {{ $item->nama_barang }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div> 
                                     <div class="d-flex align-items-center mt-2">
                                         <label class="me-2">Qty:</label>
@@ -82,9 +78,8 @@
                             </div>
                         </div>
                         
-                        <!-- Card KERANJANG -->
                         <div class="card shadow-sm">
-                            <div class="card-header bg-warning text-white">
+                            <div class="card-header bg-dark text-white">
                                 <strong>Keranjang</strong>
                             </div>
                             <div class="card-body">
@@ -100,19 +95,16 @@
                                                 <th>Aksi</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <!-- Baris produk akan digenerate oleh JavaScript -->
-                                        </tbody>
+                                        <tbody></tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Kolom KANAN: Pembayaran -->
                     <div class="col-md-4 mb-3">
                         <div class="card shadow-sm">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-dark text-white">
                                 <strong>Pembayaran</strong>
                             </div>
                             <div class="card-body">
@@ -174,7 +166,7 @@
                                 </div>
                                 
                                 <div class="mt-3">
-                                    <button type="submit" id="btn-submit" class="btn btn-primary btn-lg w-100">
+                                    <button type="submit" id="btn-submit" class="btn btn-success btn-lg w-100">
                                         Selesai & Simpan Transaksi
                                     </button>
                                 </div>
@@ -186,7 +178,6 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
     <script>
         window.onload = function() {
             hitungTotal();
@@ -195,32 +186,52 @@
         let keranjang = [];
         
         function validateQuantity() {
-            const selectProduk = document.getElementById('select-produk');
-            const qtyProduk = document.getElementById('qty-produk');
-            const selectedOption = selectProduk.options[selectProduk.selectedIndex];
-            if (!selectedOption || !selectedOption.getAttribute('data-stock')) {
-                document.getElementById('btn-tambah-produk').disabled = false;
-                return;
+            const qtyInput = document.getElementById('qty-produk');
+            const selectedOption = document.getElementById('select-produk').selectedOptions[0];
+            
+            if (selectedOption) {
+                const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+                if (parseInt(qtyInput.value) > stock) {
+                    qtyInput.value = stock;
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stok Tidak Cukup',
+                        text: `Jumlah melebihi stok yang tersedia (${stock})`
+                    });
+                }
             }
-            const stock = parseInt(selectedOption.getAttribute('data-stock'));
-            const qty = parseInt(qtyProduk.value) || 0;
-            if (qty > stock) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Stok tidak mencukupi',
-                    text: 'Jumlah yang diinput melebihi stok yang tersedia.'
-                });
-                document.getElementById('btn-tambah-produk').disabled = true;
-            } else {
-                document.getElementById('btn-tambah-produk').disabled = false;
+            
+            if (parseInt(qtyInput.value) < 1) {
+                qtyInput.value = 1;
             }
         }
-        
+
+        function getHargaByTipePelanggan(selectedOption, tipePelanggan) {
+            if (!selectedOption) return 0;
+            
+            let harga = 0;
+            switch (tipePelanggan) {
+                case '1':
+                    harga = parseFloat(selectedOption.getAttribute('data-harga-jual-1')) || 0;
+                    break;
+                case '2':
+                    harga = parseFloat(selectedOption.getAttribute('data-harga-jual-2')) || 0;
+                    break;
+                case '3':
+                    harga = parseFloat(selectedOption.getAttribute('data-harga-jual-3')) || 0;
+                    break;
+                default:
+                    harga = parseFloat(selectedOption.getAttribute('data-harga-jual-1')) || 0;
+            }
+            return harga;
+        }
+
         function tambahProduk() {
             const pelangganSelect = document.getElementById('pelanggan');
             const selectProduk = document.getElementById('select-produk');
             const qtyProduk = document.getElementById('qty-produk');
             const produkId = selectProduk.value;
+
             if (!produkId) {
                 Swal.fire({
                     icon: 'warning',
@@ -229,7 +240,7 @@
                 });
                 return;
             }
-            
+
             const qtyInput = parseInt(qtyProduk.value) || 0;
             if (qtyInput < 1) {
                 Swal.fire({
@@ -239,47 +250,39 @@
                 });
                 return;
             }
-            
-            let tipe_pelanggan = pelangganSelect.selectedOptions[0]?.dataset?.tipe || 3;
+
             const selectedOption = selectProduk.options[selectProduk.selectedIndex];
-
-            let harga = 0;
-            if (tipe_pelanggan == 1) {
-                harga = parseFloat(selectedOption.dataset.harga1) || 0;
-            } else if (tipe_pelanggan == 2) {
-                harga = parseFloat(selectedOption.dataset.harga2) || 0;
-            } else if (tipe_pelanggan == 3) {
-                harga = parseFloat(selectedOption.dataset.harga3) || 0;
-            }
-
+            const namaProduk = selectedOption.text;
             const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
 
-            let existingQty = 0;
-            keranjang.forEach(item => {
-                if (item.produk_id === produkId) {
-                    existingQty += item.qty;
-                }
-            });
-
-            if (existingQty + qtyInput > stock) {
+            if (qtyInput > stock) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Stok tidak mencukupi',
-                    text: 'Total jumlah dalam keranjang melebihi stok yang tersedia.'
+                    title: 'Stok Tidak Cukup',
+                    text: `Stok tersedia hanya ${stock} item`
                 });
                 return;
             }
 
-            const namaProduk = selectedOption.text;
-            keranjang.push({
-                id: produkId,
-                nama: namaProduk,
-                harga: harga,
-                jumlah: qtyInput,
-                subtotal: harga * qtyInput
-            });
+            const tipePelanggan = pelangganSelect.selectedOptions[0]?.dataset?.tipe || '1';
+            const harga = getHargaByTipePelanggan(selectedOption, tipePelanggan);
+            const subtotal = harga * qtyInput;
 
-            // Reset form produk
+            const existingItemIndex = keranjang.findIndex(item => item.id === produkId);
+            
+            if (existingItemIndex !== -1) {
+                keranjang[existingItemIndex].jumlah += qtyInput;
+                keranjang[existingItemIndex].subtotal = keranjang[existingItemIndex].harga * keranjang[existingItemIndex].jumlah;
+            } else {
+                keranjang.push({
+                    id: produkId,
+                    nama: namaProduk,
+                    harga: harga,
+                    jumlah: qtyInput,
+                    subtotal: subtotal
+                });
+            }
+
             selectProduk.value = '';
             qtyProduk.value = 1;
 
@@ -287,97 +290,102 @@
             hitungTotal();
         }
 
+        function renderKeranjang() {
+            const tbody = document.querySelector('#keranjang-table tbody');
+            tbody.innerHTML = '';
+
+            const pelangganSelect = document.getElementById('pelanggan');
+            const tipePelanggan = pelangganSelect.selectedOptions[0]?.dataset?.tipe || '1';
+
+            keranjang.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                
+                const selectedOption = document.querySelector(`#select-produk option[value="${item.id}"]`);
+                
+                item.harga = getHargaByTipePelanggan(selectedOption, tipePelanggan);
+                item.subtotal = item.harga * item.jumlah;
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.nama}</td>
+                    <td>${item.harga.toLocaleString('id-ID')}</td>
+                    <td>${item.jumlah}</td>
+                    <td>${item.subtotal.toLocaleString('id-ID')}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="hapusItem(${index})">Hapus</button></td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            syncHiddenInputs();
+        }
+
         function hapusItem(index) {
             keranjang.splice(index, 1);
             renderKeranjang();
             hitungTotal();
         }
-        
-        function renderKeranjang() {
-            const tbody = document.querySelector('#keranjang-table tbody');
-            tbody.innerHTML = '';
-            keranjang.forEach((item, index) => {
-                const tr = document.createElement('tr');
 
-                const tdNo = document.createElement('td');
-                tdNo.innerText = index + 1;
-                tr.appendChild(tdNo);
-
-                const tdNama = document.createElement('td');
-                tdNama.innerText = item.nama;
-                tr.appendChild(tdNama);
-
-                const tdHarga = document.createElement('td');
-                tdHarga.innerText = item.harga.toLocaleString('id-ID');
-                tr.appendChild(tdHarga);
-
-                const tdQty = document.createElement('td');
-                tdQty.innerText = item.jumlah;
-                tr.appendChild(tdQty);
-
-                const tdSubtotal = document.createElement('td');
-                tdSubtotal.innerText = item.subtotal.toLocaleString('id-ID');
-                tr.appendChild(tdSubtotal);
-
-                const tdAction = document.createElement('td');
-                tdAction.innerHTML = `<button type="button" class="btn btn-danger btn-sm" onclick="hapusItem(${index})">Delete</button>`;
-                tr.appendChild(tdAction);
-
-                tbody.appendChild(tr);
-            });
-            syncHiddenInputs();
-        }
-        
         function syncHiddenInputs() {
             document.querySelectorAll('.hidden-item').forEach(el => el.remove());
             const form = document.getElementById('form-transaksi');
+            
             keranjang.forEach(item => {
                 let inputBarangId = document.createElement('input');
                 inputBarangId.type = 'hidden';
-                inputBarangId.name = 'barang[]';
-                inputBarangId.value = JSON.stringify({ id: item.id, jumlah: item.jumlah });
+                inputBarangId.name = 'barang_id[]';
+                inputBarangId.value = item.id;
                 inputBarangId.classList.add('hidden-item');
                 form.appendChild(inputBarangId);
+                
+                let inputJumlah = document.createElement('input');
+                inputJumlah.type = 'hidden';
+                inputJumlah.name = 'jumlah[]';
+                inputJumlah.value = item.jumlah;
+                inputJumlah.classList.add('hidden-item');
+                form.appendChild(inputJumlah);
+                
+                let inputHarga = document.createElement('input');
+                inputHarga.type = 'hidden';
+                inputHarga.name = 'harga[]';
+                inputHarga.value = item.harga;
+                inputHarga.classList.add('hidden-item');
+                form.appendChild(inputHarga);
             });
         }
-        
-        function convertRupiah(str) {
-            let clean = str.replace(/\./g, '');
-            clean = clean.replace(',', '.');
-            return parseFloat(clean) || 0;
-        }
-        
+
         function hitungTotal() {
             let total = 0;
             keranjang.forEach(item => {
                 total += item.subtotal;
             });
-            
+
             const pelanggan = document.getElementById('pelanggan');
             const selectedPelanggan = pelanggan.selectedOptions[0];
-            let tipe_pelanggan = selectedPelanggan ? selectedPelanggan.dataset.tipe : null;
+            let tipe_pelanggan = selectedPelanggan ? selectedPelanggan.dataset.tipe : '1';
             let membershipOwned = selectedPelanggan ? parseFloat(selectedPelanggan.getAttribute('data-membership_points')) || 0 : 0;
-            if (!selectedPelanggan) {
-                tipep_pelanggan = 3;
-            }
+            
             document.getElementById('label-membership-owned').innerText = membershipOwned.toLocaleString('id-ID');
             
             let diskonPelanggan = 0;
             let diskonThreshold = 0;
             let membershipEarned = 0;
+            
             if (pelanggan.value !== "") {
-                if (tipe_pelanggan == 1 || tipe_pelanggan == 2) {
+                if (tipe_pelanggan === '1' || tipe_pelanggan === '2') {
                     diskonPelanggan = total * 0.05;
-                } else if (tipe_pelanggan == 3) {
+                } else if (tipe_pelanggan === '3') {
                     diskonPelanggan = total * 0.10;
                 }
+                
                 if (total > 100000) {
                     diskonThreshold = total * 0.10;
                 } else if (total > 50000) {
                     diskonThreshold = total * 0.05;
                 }
-                if (tipe_pelanggan == 1 || tipe_pelanggan == 2) {
-                    membershipEarned = total * 0.02;
+                
+                if (tipe_pelanggan === '1' || tipe_pelanggan === '2') {
+                    membershipEarned = Math.floor(total * 0.02);
                 }
             }
             
@@ -388,8 +396,17 @@
             
             let redeemedPoints = parseInt(document.getElementById('membership_points').value) || 0;
             const maxAllowedPoints = Math.floor(totalAfterPPN * 0.5);
+            
+            if (redeemedPoints > membershipOwned) {
+                redeemedPoints = membershipOwned;
+                document.getElementById('membership_points').value = redeemedPoints;
+                document.getElementById('membership-warning').style.display = 'block';
+            } else {
+                document.getElementById('membership-warning').style.display = 'none';
+            }
+            
             if (redeemedPoints > maxAllowedPoints) {
-                redeemedPoints = (membershipOwned < maxAllowedPoints) ? membershipOwned : maxAllowedPoints;
+                redeemedPoints = maxAllowedPoints;
                 document.getElementById('membership_points').value = redeemedPoints;
             }
             
@@ -404,10 +421,6 @@
             document.getElementById('label-membership-earned').innerText = membershipEarned.toLocaleString('id-ID');
             document.getElementById('label-grand-total').innerText = grandTotal.toLocaleString('id-ID');
             
-            if (redeemedPoints > membershipOwned) {
-                document.getElementById('membership_points').value = membershipOwned;
-            }
-            
             document.getElementById('payment_amount').setAttribute('min', grandTotal);
             let paymentVal = parseFloat(document.getElementById('payment_amount').value) || 0;
             if (paymentVal < grandTotal) {
@@ -416,15 +429,22 @@
             
             hitungKembalian();
         }
-        
+
         function hitungKembalian() {
             let paymentAmount = parseFloat(document.getElementById('payment_amount').value) || 0;
             let calculatedGrandTotal = convertRupiah(document.getElementById('label-grand-total').innerText);
             let kembalian = paymentAmount - calculatedGrandTotal;
-            if (kembalian < 0) kembalian = 0;
+            
+            if (kembalian < 0) {
+                kembalian = 0;
+                document.getElementById('payment-warning').style.display = 'block';
+            } else {
+                document.getElementById('payment-warning').style.display = 'none';
+            }
+            
             document.getElementById('label-kembalian').innerText = kembalian.toLocaleString('id-ID');
         }
-        
+
         function useMaxMembership() {
             const pelanggan = document.getElementById('pelanggan');
             if (pelanggan.value === "") {
@@ -432,6 +452,7 @@
                 hitungTotal();
                 return;
             }
+            
             let totalAfterPPNValue = convertRupiah(document.getElementById('label-total-akhir').innerText);
             let maxAllowed = Math.floor(totalAfterPPNValue * 0.5);
             let membershipOwned = parseFloat(pelanggan.selectedOptions[0].dataset.membership_points) || 0;
@@ -441,9 +462,16 @@
             } else {
                 document.getElementById('membership_points').value = Math.floor(membershipOwned);
             }
+            
             hitungTotal();
         }
-        
+
+        function convertRupiah(str) {
+            let clean = str.replace(/\./g, '');
+            clean = clean.replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
         document.getElementById('form-transaksi').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -478,18 +506,32 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     const form = this;
+
+                    const totalBeforeDiscount = convertRupiah(document.getElementById('label-total').innerText);
+                    const totalDiscount = convertRupiah(document.getElementById('label-diskon').innerText);
+                    const totalPPN = convertRupiah(document.getElementById('label-ppn').innerText);
+                    const totalAfterPPN = convertRupiah(document.getElementById('label-total-akhir').innerText);
+                    const poinDigunakan = document.getElementById('membership_points').value;
+                    const grandTotal = calculatedGrandTotal;
+                    const uangDibayar = paymentAmount;
+                    const kembalian = convertRupiah(document.getElementById('label-kembalian').innerText);
+
                     const hiddenFields = {
-                        'total_before_discount': convertRupiah(document.getElementById('label-total').innerText),
-                        'total_discount': convertRupiah(document.getElementById('label-diskon').innerText),
-                        'total_ppn': convertRupiah(document.getElementById('label-ppn').innerText),
-                        'total_after_ppn': convertRupiah(document.getElementById('label-total-akhir').innerText),
-                        'diskon_persen': document.getElementById('membership_points').value,
-                        'poin_digunakan': document.getElementById('membership_points').value,
-                        'grand_total': calculatedGrandTotal,
-                        'uang_dibayar': paymentAmount,
-                        'kembalian': convertRupiah(document.getElementById('label-kembalian').innerText)
+                        'user_id': '{{ auth()->user()->id }}',
+                        'pelanggan_id': document.getElementById('pelanggan').value || null,
+                        'tipe_pelanggan': document.getElementById('pelanggan').selectedOptions[0]?.dataset?.tipe || '1',
+                        'total_pembelanjaan': totalBeforeDiscount,
+                        'diskon_persen': (totalDiscount / totalBeforeDiscount * 100).toFixed(2),
+                        'diskon_nominal': totalDiscount,
+                        'poin_digunakan': poinDigunakan,
+                        'total_setelah_diskon': totalAfterPPN - totalPPN,
+                        'ppn': totalPPN,
+                        'total_akhir': totalAfterPPN,
+                        'uang_dibayar': uangDibayar,
+                        'kembalian': kembalian,
+                        'poin_didapat': convertRupiah(document.getElementById('label-membership-earned').innerText)
                     };
-                    
+
                     Object.entries(hiddenFields).forEach(([key, value]) => {
                         const input = document.createElement('input');
                         input.type = 'hidden';
@@ -497,10 +539,25 @@
                         input.value = value;
                         form.appendChild(input);
                     });
-                    
+
                     form.submit();
                 }
             });
+        });
+
+        document.getElementById('pelanggan').addEventListener('change', function() {
+            const tipePelanggan = this.selectedOptions[0]?.dataset?.tipe || '1';
+            
+            keranjang.forEach(item => {
+                const selectedOption = document.querySelector(`#select-produk option[value="${item.id}"]`);
+                if (selectedOption) {
+                    item.harga = getHargaByTipePelanggan(selectedOption, tipePelanggan);
+                    item.subtotal = item.harga * item.jumlah;
+                }
+            });
+
+            renderKeranjang();
+            hitungTotal();
         });
     </script>
 </body>
